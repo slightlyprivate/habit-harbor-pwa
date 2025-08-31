@@ -1,20 +1,18 @@
-const CACHE_NAME = 'habit-harbor-v1';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/src/main.tsx',
-  '/src/App.tsx',
-  // Add other assets
-];
+/// <reference lib="webworker" />
 
-self.addEventListener('install', (event: any) => {
+(self as unknown as ServiceWorkerGlobalScope).addEventListener('install', (event: ExtendableEvent) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+    caches.open('habit-harbor-v1')
+      .then((cache) => cache.addAll([
+        '/',
+        '/index.html',
+        '/src/main.tsx',
+        '/src/App.tsx',
+      ]))
   );
 });
 
-self.addEventListener('fetch', (event: any) => {
+(self as unknown as ServiceWorkerGlobalScope).addEventListener('fetch', (event: FetchEvent) => {
   event.respondWith(
     caches.match(event.request)
       .then((response) => {

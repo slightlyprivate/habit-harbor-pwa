@@ -8,10 +8,10 @@
 - [x] Create PWA manifest + service worker
 
 ## 🎨 UI/UX
-- [ ] Basic layout (header, habit list, add form)
-- [ ] Dark/light mode toggle
-- [ ] Mobile-first responsive design
-- [ ] Install prompt (PWA)
+- [x] Basic layout (header, habit list, add form)
+- [x] Dark/light mode toggle
+- [x] Mobile-first responsive design
+- [x] Install prompt (PWA)
 
 ## 🗂️ Features
 - [ ] Add new habit (text input + save to localForage)
