@@ -1,1 +1,13 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+@theme {
+  --color-background: #f9f9f9;
+}
+
+@layer theme {
+  :root, :host {
+    @variant dark {
+      --color-background: #66C8B6;
+    }
+  }
+}

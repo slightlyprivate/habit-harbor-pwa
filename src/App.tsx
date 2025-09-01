@@ -11,20 +11,30 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 function App() {
-  const [darkMode, setDarkMode] = useState(false)
+  // Initialize dark mode state based on localStorage or system preference
+  const getInitialDarkMode = () => {
+    const savedTheme = localStorage.getItem('theme')
+    if (savedTheme === 'dark') return true
+    if (savedTheme === 'light') return false
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
+
+  const [darkMode, setDarkMode] = useState(getInitialDarkMode)
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const [habits, setHabits] = useState<Habit[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check for saved theme preference
-    const savedTheme = localStorage.getItem('theme')
-    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      setDarkMode(true)
+    // Apply initial dark mode to document element
+    if (darkMode) {
       document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
     }
+  }, [darkMode])
 
+  useEffect(() => {
     // Listen for PWA install prompt
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault()
@@ -94,7 +104,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <div className="min-h-screen bg-background text-gray-900 dark:text-gray-100">
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
