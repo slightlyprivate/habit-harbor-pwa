@@ -27,14 +27,14 @@
 - [ ] Habit categories/tags
 
 ## 📦 Polish
-- [ ] Add `.env.example`
-- [ ] Write README.md (features, setup, screenshots)
-- [ ] Add MIT License
-- [ ] Deploy demo to Cloudflare Pages
+- [x] Add `.env.example`
+- [x] Write README.md (features, setup, screenshots)
+- [x] Add MIT License
+- [x] Deploy demo to Cloudflare Pages
 - [ ] Add demo screenshots to `/docs`
 
 ## ✅ Portfolio Ready
 - [ ] Clean commit history
-- [ ] Lint passes
-- [ ] Minimal tests (at least smoke test for App.tsx)
+- [x] Lint passes
+- [x] Minimal tests (at least smoke test for App.tsx)
 - [ ] GIF demo in README
