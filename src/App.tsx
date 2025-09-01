@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import HabitForm from './components/HabitForm'
 import HabitList from './components/HabitList'
 import StreakChart from './components/StreakChart'
+import { HabitDatabase, type Habit } from './data/db'
 
 // Type for PWA install prompt event
 interface BeforeInstallPromptEvent extends Event {
@@ -13,6 +14,8 @@ function App() {
   const [darkMode, setDarkMode] = useState(false)
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
+  const [habits, setHabits] = useState<Habit[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     // Check for saved theme preference
@@ -28,6 +31,20 @@ function App() {
       setDeferredPrompt(e as BeforeInstallPromptEvent)
       setShowInstallPrompt(true)
     })
+
+    // Load habits from database
+    const loadHabits = async () => {
+      try {
+        const loadedHabits = await HabitDatabase.getHabits()
+        setHabits(loadedHabits)
+      } catch (error) {
+        console.error('Error loading habits:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadHabits()
   }, [])
 
   const toggleDarkMode = () => {
@@ -51,6 +68,28 @@ function App() {
       }
       setDeferredPrompt(null)
       setShowInstallPrompt(false)
+    }
+  }
+
+  const handleAddHabit = async (habitData: { name: string; description?: string }) => {
+    try {
+      const newHabit = await HabitDatabase.addHabit(habitData)
+      setHabits(prev => [...prev, newHabit])
+    } catch (error) {
+      console.error('Error adding habit:', error)
+    }
+  }
+
+  const handleToggleHabit = async (habitId: string, date: Date) => {
+    try {
+      const updatedHabit = await HabitDatabase.toggleHabitCompletion(habitId, date)
+      if (updatedHabit) {
+        setHabits(prev => prev.map(habit =>
+          habit.id === habitId ? updatedHabit : habit
+        ))
+      }
+    } catch (error) {
+      console.error('Error toggling habit:', error)
     }
   }
 
@@ -86,20 +125,26 @@ function App() {
           {/* Habit Form */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <h2 className="text-xl font-semibold mb-4">Add New Habit</h2>
-            <HabitForm />
+            <HabitForm onAddHabit={handleAddHabit} />
           </div>
 
           {/* Habit List */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <h2 className="text-xl font-semibold mb-4">Your Habits</h2>
-            <HabitList />
+            {loading ? (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <p>Loading habits...</p>
+              </div>
+            ) : (
+              <HabitList habits={habits} onToggleHabit={handleToggleHabit} />
+            )}
           </div>
         </div>
 
         {/* Streak Chart */}
         <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <h2 className="text-xl font-semibold mb-4">Habit Streaks</h2>
-          <StreakChart />
+          <StreakChart habits={habits} />
         </div>
       </main>
 

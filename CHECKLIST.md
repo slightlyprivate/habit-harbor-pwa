@@ -14,11 +14,11 @@
 - [x] Install prompt (PWA)
 
 ## 🗂️ Features
-- [ ] Add new habit (text input + save to localForage)
-- [ ] List habits with daily checkboxes
-- [ ] Track streaks per habit
-- [ ] Chart.js integration for streak visualization
-- [ ] Persist habit data across sessions (offline)
+- [x] Add new habit (text input + save to localForage)
+- [x] List habits with daily checkboxes
+- [x] Track streaks per habit
+- [x] Chart.js integration for streak visualization
+- [x] Persist habit data across sessions (offline)
 
 ## 🌐 Optional Phase 2
 - [ ] Supabase integration for sync
