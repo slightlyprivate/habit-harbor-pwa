@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useDarkMode } from './hooks/useDarkMode'
 import { usePwaInstall } from './hooks/usePwaInstall'
 import { useHabits } from './hooks/useHabits'
@@ -12,9 +12,9 @@ import HabitDetailModal from './components/HabitDetailModal'
 import UndoSnackbar from './components/UndoSnackbar'
 
 function App() {
-  const { darkMode, toggleDarkMode } = useDarkMode()
+  const { toggleDarkMode } = useDarkMode()
   const { canInstall, promptInstall } = usePwaInstall()
-  const { habits, loading, addHabit, toggleHabit, logOccurrence, decrementOccurrence, deleteHabit, replaceAll, updateHabit } = useHabits()
+  const { habits, loading, addHabit, logOccurrence, decrementOccurrence, deleteHabit, replaceAll, updateHabit } = useHabits()
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
@@ -30,15 +30,6 @@ function App() {
   }, [promptInstall])
 
   const handleAddHabit = addHabit
-  const handleToggleHabit = toggleHabit
-
-  const today = useMemo(() => {
-    const d = new Date()
-    d.setHours(0, 0, 0, 0)
-    return d
-  }, [])
-
-  const streaks = useMemo(() => habits.map(h => ({ id: h.id, name: h.name, days: h.streak })), [habits])
 
   return (
     <div className="min-h-screen bg-background text-text">
@@ -109,7 +100,6 @@ function App() {
           onClearAll={async () => {
             // Remove all habits using existing hook to avoid bypassing state
             for (const h of habits) {
-              // eslint-disable-next-line no-await-in-loop
               await deleteHabit(h.id)
             }
           }}
@@ -127,17 +117,29 @@ function App() {
           }}
           onImport={async (file) => {
             const text = await file.text()
-            const raw = JSON.parse(text)
+            const raw = JSON.parse(text) as unknown
             if (!Array.isArray(raw)) throw new Error('Invalid backup file')
-            const items = raw.map((h: any) => ({
+            type RawHabit = {
+              id?: unknown
+              name?: unknown
+              description?: unknown
+              icon?: unknown
+              createdAt?: unknown
+              streak?: unknown
+              lastCompleted?: unknown
+              completedDates?: unknown
+            }
+            const items = (raw as RawHabit[]).map((h) => ({
               id: typeof h.id === 'string' ? h.id : crypto.randomUUID(),
-              name: String(h.name ?? 'Untitled'),
+              name: typeof h.name === 'string' ? h.name : 'Untitled',
               description: typeof h.description === 'string' ? h.description : undefined,
               icon: typeof h.icon === 'string' ? h.icon : undefined,
-              createdAt: new Date(h.createdAt ?? Date.now()),
-              streak: Number.isFinite(h.streak) ? h.streak : 0,
-              lastCompleted: h.lastCompleted ? new Date(h.lastCompleted) : undefined,
-              completedDates: Array.isArray(h.completedDates) ? h.completedDates.map((d: any) => new Date(d)) : [],
+              createdAt: new Date((h.createdAt as string | number | Date | undefined) ?? Date.now()),
+              streak: Number.isFinite(h.streak as number) ? (h.streak as number) : 0,
+              lastCompleted: h.lastCompleted ? new Date(h.lastCompleted as string | number | Date) : undefined,
+              completedDates: Array.isArray(h.completedDates)
+                ? (h.completedDates as Array<string | number | Date>).map((d) => new Date(d))
+                : [],
             }))
             await replaceAll(items)
           }}

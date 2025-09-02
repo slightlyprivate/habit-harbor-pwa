@@ -15,7 +15,6 @@ A minimalist habit tracker that works offline first, syncs when online, and inst
 - React + Vite
 - localForage (IndexedDB)
 - Supabase (optional sync)
-- Chart.js (streaks & completion)
 
 ## 🚀 Quick Start
 ```bash

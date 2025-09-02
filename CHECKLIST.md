@@ -23,7 +23,7 @@
 ## 🌐 Optional Phase 2
 - [ ] Supabase integration for sync
 - [ ] Notifications API (reminders)
-- [ ] Data export/import (JSON/CSV)
+- [x] Data export/import (JSON)
 - [ ] Habit categories/tags
 
 ## 📦 Polish
