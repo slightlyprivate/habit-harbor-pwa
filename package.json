@@ -9,7 +9,9 @@
     "build": "node scripts/generate-icons.mjs && vite build",
     "preview": "vite preview",
     "lint": "eslint src --ext ts,tsx",
-    "test": "vitest --run"
+    "test": "vitest --run",
+    "cf:preview": "wrangler pages dev dist",
+    "cf:deploy": "wrangler pages deploy dist"
   },
   "dependencies": {
     "localforage": "^1.10.0",

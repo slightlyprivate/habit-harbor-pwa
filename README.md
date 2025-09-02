@@ -86,3 +86,19 @@ npm run build
 ## 📝 License
 
 MIT
+
+## 🌩️ Cloudflare Pages
+
+This repo is ready for Cloudflare Pages hosting.
+
+- Build command: `npm run build`
+- Output directory: `dist`
+- SPA routing: `public/_redirects` routes all paths to `index.html`.
+- Optional CLI deploy via Wrangler: `npm run cf:deploy`
+
+Preview locally with Pages dev (after building):
+
+```
+npm run build
+npm run cf:preview
+```

@@ -1,0 +1,6 @@
+name = "habit-harbor-pwa"
+pages_build_output_dir = "dist"
+
+# If you later add Pages Functions, uncomment and configure:
+# compatibility_date = "2024-09-01"
+
