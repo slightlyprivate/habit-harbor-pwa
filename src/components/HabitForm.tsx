@@ -20,7 +20,7 @@ export default function HabitForm({ onAddHabit }: HabitFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="habit-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label htmlFor="habit-name" className="block text-sm font-medium text-text mb-1">
           Habit Name *
         </label>
         <input
@@ -29,13 +29,13 @@ export default function HabitForm({ onAddHabit }: HabitFormProps) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g., Drink 8 glasses of water"
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+          className="input"
           required
         />
       </div>
 
       <div>
-        <label htmlFor="habit-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label htmlFor="habit-description" className="block text-sm font-medium text-text mb-1">
           Description (optional)
         </label>
         <textarea
@@ -44,14 +44,11 @@ export default function HabitForm({ onAddHabit }: HabitFormProps) {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Additional details about your habit..."
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+          className="textarea"
         />
       </div>
 
-      <button
-        type="submit"
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-      >
+      <button type="submit" className="w-full btn btn-primary">
         Add Habit
       </button>
     </form>

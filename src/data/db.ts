@@ -1,4 +1,5 @@
 import localforage from 'localforage'
+import { isSameDay, toDayKey, toDayKeySet, startOfDay } from '../utils/date'
 
 export interface Habit {
   id: string
@@ -68,8 +69,7 @@ export class HabitDatabase {
     if (habitIndex === -1) return null
 
     const habit = habits[habitIndex]
-    const dateStr = date.toDateString()
-    const existingIndex = habit.completedDates.findIndex(d => d.toDateString() === dateStr)
+    const existingIndex = habit.completedDates.findIndex(d => isSameDay(d, date))
 
     if (existingIndex >= 0) {
       // Remove completion
@@ -90,48 +90,26 @@ export class HabitDatabase {
   static calculateStreak(completedDates: Date[]): number {
     if (completedDates.length === 0) return 0
 
-    // Sort dates in descending order (most recent first)
-    const sortedDates = completedDates
-      .map(d => new Date(d))
-      .sort((a, b) => b.getTime() - a.getTime())
+    const today = startOfDay(new Date())
+    const daySet = toDayKeySet(completedDates)
 
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    // If neither today nor yesterday completed, streak is 0
+    const todayKey = toDayKey(today)
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    const yesterdayKey = toDayKey(yesterday)
 
-    // Check if today is completed
-    const todayCompleted = sortedDates.some(d => d.toDateString() === today.toDateString())
+    const anchor = daySet.has(todayKey) ? today : (daySet.has(yesterdayKey) ? yesterday : null)
+    if (!anchor) return 0
 
-    if (!todayCompleted) {
-      // If today is not completed, check yesterday
-      const yesterday = new Date(today)
-      yesterday.setDate(yesterday.getDate() - 1)
-      const yesterdayCompleted = sortedDates.some(d => d.toDateString() === yesterday.toDateString())
-
-      if (!yesterdayCompleted) return 0
+    // Count back consecutive days from anchor
+    let streak = 0
+    const cursor = new Date(anchor)
+    while (daySet.has(toDayKey(cursor))) {
+      streak += 1
+      cursor.setDate(cursor.getDate() - 1)
     }
-
-    // Count consecutive days
-    const startDate = new Date(today)
-    if (!todayCompleted) {
-      startDate.setDate(startDate.getDate() - 1)
-    }
-
-    let streakCount = 0
-    const currentDate = new Date(startDate)
-
-    while (true) {
-      const dateStr = currentDate.toDateString()
-      const isCompleted = sortedDates.some(d => d.toDateString() === dateStr)
-
-      if (isCompleted) {
-        streakCount++
-        currentDate.setDate(currentDate.getDate() - 1)
-      } else {
-        break
-      }
-    }
-
-    return streakCount
+    return streak
   }
 
   static async deleteHabit(habitId: string): Promise<boolean> {

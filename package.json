@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint src --ext ts,tsx",
-    "test": "vitest"
+    "test": "vitest --run"
   },
   "dependencies": {
     "@types/chart.js": "^2.9.41",

@@ -1,13 +1,45 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 @theme {
-  --color-background: #f9f9f9;
+  /* Light mode tokens */
+  --color-background: #f8fafc; /* slate-50 */
+  --color-surface: #ffffff;
+  --color-border: #e5e7eb; /* gray-200 */
+  --color-text: #0f172a; /* slate-900 */
+  --color-muted: #64748b; /* slate-500 */
+  --color-primary: #2563eb; /* blue-600 */
+  --color-primary-foreground: #ffffff;
+  --color-ring: #334155; /* slate-600 */
 }
 
 @layer theme {
   :root, :host {
     @variant dark {
-      --color-background: #66C8B6;
+      /* Dark mode tokens (neutral) */
+      --color-background: #0f172a; /* slate-900 */
+      --color-surface: #111827; /* gray-900 */
+      --color-border: #334155; /* slate-700 */
+      --color-text: #e2e8f0; /* slate-200 */
+      --color-muted: #94a3b8; /* slate-400 */
+      --color-primary: #e2e8f0; /* neutral accent */
+      --color-primary-foreground: #0f172a;
+      --color-ring: #94a3b8;
     }
   }
+}
+
+/* Component primitives */
+@layer components {
+  .card { @apply bg-surface border border-border rounded-lg shadow-sm; }
+
+  .btn { @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:pointer-events-none; }
+  .btn-primary { @apply bg-primary text-[--color-primary-foreground]; }
+  .btn-primary:hover { filter: brightness(0.95); }
+  .btn-secondary { @apply bg-surface text-text border border-border; }
+  .btn-secondary:hover { filter: brightness(0.98); }
+  .btn-ghost { @apply bg-transparent text-text; }
+  .btn-ghost:hover { @apply bg-surface; }
+
+  .input { @apply w-full px-3 py-2 rounded-md border border-border bg-surface text-text shadow-sm placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring; }
+  .textarea { @apply w-full px-3 py-2 rounded-md border border-border bg-surface text-text shadow-sm placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring; }
 }

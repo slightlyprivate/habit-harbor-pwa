@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -19,48 +19,30 @@ ChartJS.register(
   Legend
 )
 
-interface Habit {
-  id: string
-  name: string
-  streak: number
-}
+import type { Habit } from '../data/db'
 
 interface StreakChartProps {
-  habits?: Habit[]
+  habits?: Pick<Habit, 'id' | 'name' | 'streak'>[]
 }
 
 export default function StreakChart({ habits = [] }: StreakChartProps) {
   const chartRef = useRef<ChartJS<'bar'>>(null)
 
-  useEffect(() => {
-    // Update chart when habits change
-    if (chartRef.current) {
-      chartRef.current.update()
-    }
-  }, [habits])
-
-  if (habits.length === 0) {
-    return (
-      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-        <p>No habits to display. Add some habits to see your progress!</p>
-      </div>
-    )
-  }
-
-  const data = {
+  const data = useMemo(() => ({
     labels: habits.map(habit => habit.name),
     datasets: [
       {
         label: 'Current Streak (days)',
         data: habits.map(habit => habit.streak),
-        backgroundColor: 'rgba(59, 130, 246, 0.6)',
-        borderColor: 'rgba(59, 130, 246, 1)',
+        // Neutral slate tones for better dark mode contrast
+        backgroundColor: 'rgba(100, 116, 139, 0.6)', // slate-500
+        borderColor: 'rgba(71, 85, 105, 1)', // slate-600
         borderWidth: 1,
       },
     ],
-  }
+  }), [habits])
 
-  const options = {
+  const options = useMemo(() => ({
     responsive: true,
     plugins: {
       legend: {
@@ -79,11 +61,17 @@ export default function StreakChart({ habits = [] }: StreakChartProps) {
         },
       },
     },
-  }
+  }), [])
 
   return (
     <div className="w-full">
-      <Bar ref={chartRef} data={data} options={options} />
+      {habits.length === 0 ? (
+        <div className="text-center py-8 text-muted">
+          <p>No habits to display. Add some habits to see your progress!</p>
+        </div>
+      ) : (
+        <Bar ref={chartRef} data={data} options={options} />
+      )}
     </div>
   )
 }

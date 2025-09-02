@@ -1,14 +1,6 @@
-import { useState, useEffect } from 'react'
-
-interface Habit {
-  id: string
-  name: string
-  description?: string
-  createdAt: Date
-  streak: number
-  lastCompleted?: Date
-  completedDates: Date[]
-}
+import { useMemo } from 'react'
+import type { Habit } from '../data/db'
+import { includesDay, startOfDay } from '../utils/date'
 
 interface HabitListProps {
   habits?: Habit[]
@@ -16,21 +8,9 @@ interface HabitListProps {
 }
 
 export default function HabitList({ habits = [], onToggleHabit }: HabitListProps) {
-  const [localHabits, setLocalHabits] = useState<Habit[]>(habits)
+  const today = useMemo(() => startOfDay(new Date()), [])
 
-  useEffect(() => {
-    setLocalHabits(habits)
-  }, [habits])
-
-  const isCompletedToday = (habit: Habit) => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    return habit.completedDates.some(date => {
-      const d = new Date(date)
-      d.setHours(0, 0, 0, 0)
-      return d.getTime() === today.getTime()
-    })
-  }
+  const isCompletedToday = (habit: Habit) => includesDay(habit.completedDates, today)
 
   const handleToggle = (habit: Habit) => {
     const today = new Date()
@@ -38,9 +18,9 @@ export default function HabitList({ habits = [], onToggleHabit }: HabitListProps
     onToggleHabit?.(habit.id, today)
   }
 
-  if (localHabits.length === 0) {
+  if (habits.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+      <div className="text-center py-8 text-muted">
         <p>No habits yet. Add your first habit above!</p>
       </div>
     )
@@ -48,17 +28,14 @@ export default function HabitList({ habits = [], onToggleHabit }: HabitListProps
 
   return (
     <div className="space-y-4">
-      {localHabits.map((habit) => (
-        <div
-          key={habit.id}
-          className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
-        >
+      {habits.map((habit) => (
+        <div key={habit.id} className="flex items-center justify-between p-4 card">
           <div className="flex-1">
-            <h3 className="font-medium text-gray-900 dark:text-white">{habit.name}</h3>
+            <h3 className="font-medium text-text">{habit.name}</h3>
             {habit.description && (
-              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{habit.description}</p>
+              <p className="text-sm text-muted mt-1">{habit.description}</p>
             )}
-            <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-4 mt-2 text-sm text-muted">
               <span>Streak: {habit.streak} days</span>
               {habit.lastCompleted && (
                 <span>Last: {habit.lastCompleted.toLocaleDateString()}</span>
@@ -71,7 +48,7 @@ export default function HabitList({ habits = [], onToggleHabit }: HabitListProps
             className={`ml-4 w-8 h-8 rounded-full border-2 transition-colors ${
               isCompletedToday(habit)
                 ? 'bg-green-500 border-green-500 text-white'
-                : 'border-gray-300 dark:border-gray-500 hover:border-blue-500'
+                : 'border-border hover:border-muted'
             }`}
             aria-label={isCompletedToday(habit) ? 'Mark as incomplete' : 'Mark as complete'}
           >
