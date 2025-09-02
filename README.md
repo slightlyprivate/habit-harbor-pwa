@@ -2,6 +2,11 @@
 
 A minimalist habit tracker that works offline first, syncs when online, and installs to your home screen.
 
+Live demo: https://habit-harbor.slightlybetter.dev
+
+[![Live](https://img.shields.io/badge/Live-habit--harbor.slightlybetter.dev-2563eb?logo=cloudflare&logoColor=white)](https://habit-harbor.slightlybetter.dev)
+[![PWA](https://img.shields.io/badge/PWA-Installable-success?logo=google-chrome&logoColor=white)](https://habit-harbor.slightlybetter.dev)
+
 ![ui-screenshot](docs/ui.png)
 
 ## ✨ Features
@@ -64,6 +69,8 @@ npm run build
 # Deploy /dist to Cloudflare Pages/Netlify
 ```
 
+Deployed on Cloudflare Pages at: https://habit-harbor.slightlybetter.dev
+
 ## 🧪 Testing
 
 - Add 3 habits, toggle offline in DevTools → continue using app
@@ -75,6 +82,14 @@ npm run build
 - `docs/ui.png` main screen
 - `docs/pwa-install.png` install prompt
 - `docs/offline.png` offline DevTools capture
+
+### Scan to open on mobile
+
+<p>
+  <a href="https://habit-harbor.slightlybetter.dev">
+    <img alt="QR code linking to Habit Harbor" width="180" height="180" src="https://api.qrserver.com/v1/create-qr-code/?size=360x360&data=https%3A%2F%2Fhabit-harbor.slightlybetter.dev" />
+  </a>
+</p>
 
 ## 🧭 Roadmap
 
