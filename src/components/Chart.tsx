@@ -1,11 +1,11 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 import type { Habit } from '../data/db'
 import { isSameDay, startOfDay, toDayKey } from '../utils/date'
 
-interface Props { habits: Habit[] }
+interface Props { habits?: Habit[] }
 
 // Activity card: highlights useful insights for count-based logging
-export default function Chart({ habits }: Props) {
+export default function Chart({ habits = [] }: Props) {
   const today = useMemo(() => startOfDay(new Date()), [])
   const last7 = useMemo(() => {
     const a: Date[] = []
