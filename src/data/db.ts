@@ -5,6 +5,7 @@ export interface Habit {
   id: string
   name: string
   description?: string
+  icon?: string
   createdAt: Date
   streak: number
   lastCompleted?: Date
@@ -87,6 +88,47 @@ export class HabitDatabase {
     return habit
   }
 
+  // Log an occurrence without toggling (supports multiple times per day)
+  static async logHabitOccurrence(habitId: string, date: Date): Promise<Habit | null> {
+    const habits = await this.getHabits()
+    const habitIndex = habits.findIndex(h => h.id === habitId)
+    if (habitIndex === -1) return null
+
+    const habit = habits[habitIndex]
+    habit.completedDates.push(date)
+    habit.lastCompleted = date
+    habit.streak = this.calculateStreak(habit.completedDates)
+
+    await this.saveHabits(habits)
+    return habit
+  }
+
+  static async removeHabitOccurrence(habitId: string, date: Date): Promise<Habit | null> {
+    const habits = await this.getHabits()
+    const habitIndex = habits.findIndex(h => h.id === habitId)
+    if (habitIndex === -1) return null
+
+    const habit = habits[habitIndex]
+    // Remove the last occurrence matching the same day
+    for (let i = habit.completedDates.length - 1; i >= 0; i--) {
+      if (isSameDay(habit.completedDates[i], date)) {
+        habit.completedDates.splice(i, 1)
+        break
+      }
+    }
+    // Update streak (lastCompleted may change but we keep it if still exists today)
+    habit.streak = this.calculateStreak(habit.completedDates)
+    if (!habit.completedDates.some(d => isSameDay(d, habit.lastCompleted ?? new Date(0)))) {
+      // Reset lastCompleted to most recent date if any
+      habit.lastCompleted = habit.completedDates.length
+        ? habit.completedDates.reduce((a, b) => (a > b ? a : b))
+        : undefined
+    }
+
+    await this.saveHabits(habits)
+    return habit
+  }
+
   static calculateStreak(completedDates: Date[]): number {
     if (completedDates.length === 0) return 0
 
@@ -124,5 +166,15 @@ export class HabitDatabase {
 
   static async clearAllData(): Promise<void> {
     await localforage.clear()
+  }
+
+  static async updateHabit(habitId: string, patch: Partial<Pick<Habit, 'name' | 'description' | 'icon'>>): Promise<Habit | null> {
+    const habits = await this.getHabits()
+    const idx = habits.findIndex(h => h.id === habitId)
+    if (idx === -1) return null
+    const updated: Habit = { ...habits[idx], ...patch }
+    habits[idx] = updated
+    await this.saveHabits(habits)
+    return updated
   }
 }

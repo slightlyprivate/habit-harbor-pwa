@@ -1,5 +1,5 @@
 const CACHE_NAME = 'habit-harbor-v3';
-const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest', '/vite.svg'];
+const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

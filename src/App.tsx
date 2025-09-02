@@ -1,15 +1,26 @@
-import { useCallback } from 'react'
-import HabitForm from './components/HabitForm'
-import HabitList from './components/HabitList'
-import StreakChart from './components/StreakChart'
+import { useCallback, useMemo, useState } from 'react'
 import { useDarkMode } from './hooks/useDarkMode'
 import { usePwaInstall } from './hooks/usePwaInstall'
 import { useHabits } from './hooks/useHabits'
+import Header from './components/Header'
+import HabitGrid from './components/HabitGrid'
+import AddHabitModal from './components/AddHabitModal'
+import Chart from './components/Chart'
+import HeaderMenu from './components/HeaderMenu'
+import SettingsModal from './components/SettingsModal'
+import HabitDetailModal from './components/HabitDetailModal'
+import UndoSnackbar from './components/UndoSnackbar'
 
 function App() {
   const { darkMode, toggleDarkMode } = useDarkMode()
   const { canInstall, promptInstall } = usePwaInstall()
-  const { habits, loading, addHabit, toggleHabit } = useHabits()
+  const { habits, loading, addHabit, toggleHabit, logOccurrence, decrementOccurrence, deleteHabit, replaceAll, updateHabit } = useHabits()
+  const [isAddOpen, setIsAddOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [menuAnchor, setMenuAnchor] = useState<{ top: number; right: number } | null>(null)
+  const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null)
+  const [snack, setSnack] = useState<{ open: boolean; message: string; undo: (() => void) | null }>({ open: false, message: '', undo: null })
 
   const handleInstallClick = useCallback(async () => {
     const result = await promptInstall()
@@ -19,65 +30,144 @@ function App() {
   }, [promptInstall])
 
   const handleAddHabit = addHabit
-
   const handleToggleHabit = toggleHabit
+
+  const today = useMemo(() => {
+    const d = new Date()
+    d.setHours(0, 0, 0, 0)
+    return d
+  }, [])
+
+  const streaks = useMemo(() => habits.map(h => ({ id: h.id, name: h.name, days: h.streak })), [habits])
 
   return (
     <div className="min-h-screen bg-background text-text">
-      {/* Header */}
-      <header className="sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-gray-900/60 bg-surface shadow-sm border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-text">Habit Harbor</h1>
-          <div className="flex items-center gap-3">
-            {canInstall && (
-              <button onClick={handleInstallClick} className="btn btn-primary">Install App</button>
-            )}
-            <button
-              onClick={toggleDarkMode}
-              className="btn btn-ghost p-2"
-              aria-label="Toggle dark mode"
-            >
-              {darkMode ? '☀️' : '🌙'}
-            </button>
-          </div>
-        </div>
-      </header>
+      <Header
+        onSettingsClick={() => setIsSettingsOpen(true)}
+        onMenuClick={(e) => {
+          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+          const top = rect.bottom + 8
+          const right = Math.max(8, window.innerWidth - rect.right + 8)
+          setMenuAnchor({ top, right })
+          setIsMenuOpen((v) => !v)
+        }}
+      />
 
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="grid gap-8 md:grid-cols-2">
-          {/* Habit Form */}
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold mb-4">Add New Habit</h2>
-            <HabitForm onAddHabit={handleAddHabit} />
-          </div>
+      <main className="max-w-screen-md mx-auto px-4 sm:px-6 py-6">
+        <h1 className="text-center text-3xl sm:text-4xl font-semibold text-gray-600 my-8">
+          Track your habits offline-first
+        </h1>
 
-          {/* Habit List */}
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold mb-4">Your Habits</h2>
-            {loading ? (
-              <div className="text-center py-8 text-muted">
-                <p>Loading habits...</p>
-              </div>
-            ) : (
-              <HabitList habits={habits} onToggleHabit={handleToggleHabit} />
-            )}
-          </div>
-        </div>
+        <section className="mb-6">
+          <h3 className="text-xs font-semibold tracking-wider text-gray-500 uppercase mb-3">
+            Habits
+          </h3>
+          {loading ? (
+            <div className="text-center py-8 text-muted">
+              <p>Loading habits...</p>
+            </div>
+          ) : (
+            <HabitGrid
+              habits={habits}
+              onAddClick={() => setIsAddOpen(true)}
+              onHabitIncrement={(id) => {
+                logOccurrence(id, new Date())
+                const habit = habits.find(h => h.id === id)
+                setSnack({ open: true, message: `Logged one for ${habit?.name ?? 'habit'}`, undo: () => decrementOccurrence(id, new Date()) })
+              }}
+              onHabitOpen={(id) => setSelectedHabitId(id)}
+            />
+          )}
+        </section>
 
-        {/* Streak Chart */}
-        <div className="mt-8 card p-6">
-          <h2 className="text-xl font-semibold mb-4">Habit Streaks</h2>
-          <StreakChart habits={habits} />
-        </div>
+        <section className="mb-10">
+          <h3 className="text-xs font-semibold tracking-wider text-gray-500 uppercase mb-3">
+            Activity
+          </h3>
+          <div className="card p-4">
+            <Chart habits={habits} />
+          </div>
+        </section>
+
+        <AddHabitModal
+          isOpen={isAddOpen}
+          onClose={() => setIsAddOpen(false)}
+          onSubmit={handleAddHabit}
+        />
+        <HeaderMenu
+          isOpen={isMenuOpen}
+          onClose={() => setIsMenuOpen(false)}
+          onInstallApp={handleInstallClick}
+          onToggleDarkMode={toggleDarkMode}
+          canInstall={canInstall}
+          anchor={menuAnchor || undefined}
+        />
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          onToggleDarkMode={toggleDarkMode}
+          onClearAll={async () => {
+            // Remove all habits using existing hook to avoid bypassing state
+            for (const h of habits) {
+              // eslint-disable-next-line no-await-in-loop
+              await deleteHabit(h.id)
+            }
+          }}
+          onExport={() => {
+            const data = JSON.stringify(habits, null, 2)
+            const blob = new Blob([data], { type: 'application/json' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `habit-harbor-backup-${new Date().toISOString().slice(0,10)}.json`
+            document.body.appendChild(a)
+            a.click()
+            a.remove()
+            URL.revokeObjectURL(url)
+          }}
+          onImport={async (file) => {
+            const text = await file.text()
+            const raw = JSON.parse(text)
+            if (!Array.isArray(raw)) throw new Error('Invalid backup file')
+            const items = raw.map((h: any) => ({
+              id: typeof h.id === 'string' ? h.id : crypto.randomUUID(),
+              name: String(h.name ?? 'Untitled'),
+              description: typeof h.description === 'string' ? h.description : undefined,
+              icon: typeof h.icon === 'string' ? h.icon : undefined,
+              createdAt: new Date(h.createdAt ?? Date.now()),
+              streak: Number.isFinite(h.streak) ? h.streak : 0,
+              lastCompleted: h.lastCompleted ? new Date(h.lastCompleted) : undefined,
+              completedDates: Array.isArray(h.completedDates) ? h.completedDates.map((d: any) => new Date(d)) : [],
+            }))
+            await replaceAll(items)
+          }}
+        />
+
+        <HabitDetailModal
+          habit={habits.find(h => h.id === selectedHabitId)}
+          isOpen={!!selectedHabitId}
+          onClose={() => setSelectedHabitId(null)}
+          onIncrement={(id) => {
+            logOccurrence(id, new Date())
+            const habit = habits.find(h => h.id === id)
+            setSnack({ open: true, message: `Logged one for ${habit?.name ?? 'habit'}`, undo: () => decrementOccurrence(id, new Date()) })
+          }}
+          onDecrement={(id) => {
+            decrementOccurrence(id, new Date())
+            const habit = habits.find(h => h.id === id)
+            setSnack({ open: true, message: `Removed one from ${habit?.name ?? 'habit'}`, undo: () => logOccurrence(id, new Date()) })
+          }}
+          onUpdate={async (id, patch) => { await updateHabit(id, patch) }}
+          onDelete={async (id) => { await deleteHabit(id); setSelectedHabitId(null) }}
+        />
+
+        <UndoSnackbar
+          open={snack.open}
+          message={snack.message}
+          onUndo={() => { snack.undo?.(); setSnack({ open: false, message: '', undo: null }) }}
+          onClose={() => setSnack({ open: false, message: '', undo: null })}
+        />
       </main>
-
-      {/* Footer */}
-      <footer className="bg-surface border-t border-border mt-12">
-        <div className="max-w-4xl mx-auto px-4 py-6 text-center text-sm text-muted">
-          <p>Track your habits offline-first with PWA support</p>
-        </div>
-      </footer>
     </div>
   )
 }

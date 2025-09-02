@@ -20,7 +20,7 @@ export function useHabits() {
     load()
   }, [])
 
-  const addHabit = useCallback(async (habitData: { name: string; description?: string }) => {
+  const addHabit = useCallback(async (habitData: { name: string; description?: string; icon?: string }) => {
     try {
       const newHabit = await HabitDatabase.addHabit(habitData)
       setHabits(prev => [...prev, newHabit])
@@ -42,12 +42,46 @@ export function useHabits() {
     }
   }, [])
 
+  const logOccurrence = useCallback(async (habitId: string, date: Date) => {
+    try {
+      const updated = await HabitDatabase.logHabitOccurrence(habitId, date)
+      if (updated) {
+        setHabits(prev => prev.map(h => (h.id === habitId ? updated : h)))
+      }
+    } catch (err) {
+      setError(err)
+      throw err
+    }
+  }, [])
+
+  const decrementOccurrence = useCallback(async (habitId: string, date: Date) => {
+    try {
+      const updated = await HabitDatabase.removeHabitOccurrence(habitId, date)
+      if (updated) {
+        setHabits(prev => prev.map(h => (h.id === habitId ? updated : h)))
+      }
+    } catch (err) {
+      setError(err)
+      throw err
+    }
+  }, [])
+
   const deleteHabit = useCallback(async (habitId: string) => {
     const success = await HabitDatabase.deleteHabit(habitId)
     if (success) setHabits(prev => prev.filter(h => h.id !== habitId))
     return success
   }, [])
 
-  return { habits, loading, error, addHabit, toggleHabit, deleteHabit }
-}
+  const replaceAll = useCallback(async (items: Habit[]) => {
+    await HabitDatabase.saveHabits(items)
+    setHabits(items)
+  }, [])
 
+  const updateHabit = useCallback(async (habitId: string, patch: Partial<Pick<Habit, 'name' | 'description' | 'icon'>>) => {
+    const updated = await HabitDatabase.updateHabit(habitId, patch)
+    if (updated) setHabits(prev => prev.map(h => (h.id === habitId ? updated : h)))
+    return updated
+  }, [])
+
+  return { habits, loading, error, addHabit, toggleHabit, logOccurrence, decrementOccurrence, deleteHabit, replaceAll, updateHabit }
+}
