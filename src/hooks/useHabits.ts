@@ -49,30 +49,47 @@ export function useHabits() {
       const updated = await HabitDatabase.logHabitOccurrence(habitId, date)
       if (updated) {
         setHabits(prev => prev.map(h => (h.id === habitId ? updated : h)))
+        // Track habit completion event
+        const habit = habits.find(h => h.id === habitId)
+        if (habit) {
+          window.umami?.track('log_habit', { habit_name: habit.name })
+        }
       }
     } catch (err) {
       setError(err)
       throw err
     }
-  }, [])
+  }, [habits])
 
   const decrementOccurrence = useCallback(async (habitId: string, date: Date) => {
     try {
       const updated = await HabitDatabase.removeHabitOccurrence(habitId, date)
       if (updated) {
         setHabits(prev => prev.map(h => (h.id === habitId ? updated : h)))
+        // Track habit decrement event
+        const habit = habits.find(h => h.id === habitId)
+        if (habit) {
+          window.umami?.track('decrement_habit', { habit_name: habit.name })
+        }
       }
     } catch (err) {
       setError(err)
       throw err
     }
-  }, [])
+  }, [habits])
 
   const deleteHabit = useCallback(async (habitId: string) => {
+    const habit = habits.find(h => h.id === habitId)
     const success = await HabitDatabase.deleteHabit(habitId)
-    if (success) setHabits(prev => prev.filter(h => h.id !== habitId))
+    if (success) {
+      setHabits(prev => prev.filter(h => h.id !== habitId))
+      // Track habit deletion event
+      if (habit) {
+        window.umami?.track('delete_habit', { habit_name: habit.name })
+      }
+    }
     return success
-  }, [])
+  }, [habits])
 
   const replaceAll = useCallback(async (items: Habit[]) => {
     await HabitDatabase.saveHabits(items)

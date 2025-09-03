@@ -10,7 +10,7 @@ export interface BeforeInstallPromptEvent extends Event {
 declare global {
   interface Window {
     umami?: {
-      track: (event: string, data?: Record<string, any>) => void
+      track: (event: string, data?: Record<string, string | number | boolean>) => void
     }
   }
 }
