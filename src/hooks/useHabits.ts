@@ -24,6 +24,8 @@ export function useHabits() {
     try {
       const newHabit = await HabitDatabase.addHabit(habitData)
       setHabits(prev => [...prev, newHabit])
+      // Track habit addition event
+      window.umami?.track('add_habit')
     } catch (err) {
       setError(err)
       throw err
