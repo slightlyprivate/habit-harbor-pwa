@@ -1,11 +1,11 @@
-# Copilot Instructions – Habit Harbor
+# Copilot Instructions – Keep Habit
 
 These are the guardrails and preferences for GitHub Copilot (and any other AI code assistant) when generating code in this repository.
 
 ---
 
 ## 🎯 Project Context
-- Project name: **Habit Harbor**
+- Project name: **Keep Habit**
 - Type: **Offline-first PWA**
 - Tech Stack: **React + TypeScript + Vite + Tailwind + localForage + Chart.js**
 - Goal: Showcase **frontend + offline-first patterns** in a simple, polished portfolio project.

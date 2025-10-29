@@ -10,9 +10,11 @@ interface HabitDetailModalProps {
   onDecrement: (habitId: string) => void
   onUpdate?: (habitId: string, patch: { name?: string; description?: string }) => Promise<void> | void
   onDelete?: (habitId: string) => Promise<void> | void
+  onSkip?: (habitId: string) => void
+  onArchiveToggle?: (habitId: string, archived: boolean) => void
 }
 
-export default function HabitDetailModal({ habit, isOpen, onClose, onIncrement, onDecrement, onUpdate, onDelete }: HabitDetailModalProps) {
+export default function HabitDetailModal({ habit, isOpen, onClose, onIncrement, onDecrement, onUpdate, onDelete, onSkip, onArchiveToggle }: HabitDetailModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(false)
   const [name, setName] = useState('')
@@ -103,17 +105,31 @@ export default function HabitDetailModal({ habit, isOpen, onClose, onIncrement, 
             </div>
           </div>
 
-          <div className="mb-2 text-sm font-medium">Last 14 days</div>
-          <div className="space-y-1 max-h-64 overflow-auto pr-1">
-            {lastNDays.map(d => (
-              <div key={d.key} className="flex items-center gap-3">
-                <div className="w-20 text-sm text-muted">{d.label}</div>
-                <div className="flex-1 h-2 bg-background rounded-full overflow-hidden">
-                  <div className="h-full bg-[color:var(--color-muted)]" style={{ width: `${Math.min(100, d.count * 10)}%` }} aria-label={`${d.label} count ${d.count}`} />
-                </div>
-                <div className="w-10 text-right text-sm tabular-nums">{d.count}</div>
-              </div>
-            ))}
+          {/* Metrics row */}
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            <div className="rounded-xl border border-border p-2 text-center">
+              <div className="text-xs text-muted">Current streak</div>
+              <div className="text-base font-medium">{habit.streak}</div>
+            </div>
+            <div className="rounded-xl border border-border p-2 text-center">
+              <div className="text-xs text-muted">Best streak</div>
+              <div className="text-base font-medium">{/* placeholder, computed outside if needed */}</div>
+            </div>
+            <div className="rounded-xl border border-border p-2 text-center">
+              <div className="text-xs text-muted">30d rate</div>
+              <div className="text-base font-medium">{/* placeholder, computed outside if needed */}</div>
+            </div>
+          </div>
+
+          <div className="mb-2 text-sm font-medium">Last 30 days</div>
+          <div className="flex flex-wrap gap-1 mb-4" aria-label="30-day dot strip">
+            {Array.from({ length: 30 }).map((_, i) => {
+              const d = new Date(today)
+              d.setDate(d.getDate() - i)
+              const k = toDayKey(d)
+              const hit = countsByDay.get(k) ?? 0
+              return <span key={k} className={`inline-block w-3 h-3 rounded-sm ${hit > 0 ? 'bg-[color:var(--color-muted)]' : 'bg-background border border-border'}`} aria-hidden />
+            })}
           </div>
 
           <div className="mt-4">
@@ -135,6 +151,8 @@ export default function HabitDetailModal({ habit, isOpen, onClose, onIncrement, 
                   <button type="button" className="btn btn-primary" onClick={() => onDelete?.(habit.id)}>Confirm</button>
                 </>
               )}
+              <button type="button" className="btn btn-secondary" onClick={() => onSkip?.(habit.id)}>Skip today</button>
+              <button type="button" className="btn btn-secondary" onClick={() => onArchiveToggle?.(habit.id, !habit.archived)}>{habit.archived ? 'Unarchive' : 'Archive'}</button>
             </div>
             <div className="flex items-center gap-2">
               {!editing ? (

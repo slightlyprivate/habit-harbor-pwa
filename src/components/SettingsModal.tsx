@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import type { Habit } from '../data/db'
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -7,9 +8,14 @@ interface SettingsModalProps {
   onClearAll?: () => Promise<void> | void
   onExport?: () => void
   onImport?: (file: File) => Promise<void> | void
+  analyticsEnabled?: boolean
+  onToggleAnalytics?: (enabled: boolean) => void
+  archivedHabits?: Habit[]
+  onUnarchiveArchived?: (id: string) => void
+  onDeleteArchived?: (id: string) => Promise<void> | void
 }
 
-export default function SettingsModal({ isOpen, onClose, onToggleDarkMode, onClearAll, onExport, onImport }: SettingsModalProps) {
+export default function SettingsModal({ isOpen, onClose, onToggleDarkMode, onClearAll, onExport, onImport, analyticsEnabled, onToggleAnalytics, archivedHabits, onUnarchiveArchived, onDeleteArchived }: SettingsModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const [confirming, setConfirming] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -76,7 +82,8 @@ export default function SettingsModal({ isOpen, onClose, onToggleDarkMode, onCle
       <div className={`absolute inset-0 bg-black/40 transition-opacity duration-150 ${visible ? 'opacity-100' : 'opacity-0'}`} onClick={onClose} />
       <div className="absolute inset-0 flex items-center justify-center p-4">
         <div ref={dialogRef} className={`w-full max-w-md rounded-2xl bg-surface border border-border p-6 shadow-lg transition transform duration-200 ease-out ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
-          <h2 className="text-lg font-semibold mb-4">Settings</h2>
+          <h2 className="text-lg font-semibold mb-2">Settings</h2>
+          <p className="text-sm text-muted mb-4">Your data, your device. Export anytime.</p>
           <div className="space-y-3">
             <button
               type="button"
@@ -111,6 +118,42 @@ export default function SettingsModal({ isOpen, onClose, onToggleDarkMode, onCle
                   Import Data
                 </button>
               </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+              <div>
+                <div className="font-medium">Analytics</div>
+                <div className="text-sm text-muted">Privacy-respecting events. You can disable anytime.</div>
+              </div>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => onToggleAnalytics?.(!analyticsEnabled)}
+              >
+                {analyticsEnabled ? 'Disable' : 'Enable'}
+              </button>
+            </div>
+
+            <div className="rounded-lg border border-border p-3">
+              <div className="font-medium mb-2">Archived</div>
+              {!archivedHabits || archivedHabits.length === 0 ? (
+                <div className="text-sm text-muted">No archived habits.</div>
+              ) : (
+                <div className="space-y-2">
+                  {archivedHabits.map(h => (
+                    <div key={h.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-md bg-background flex items-center justify-center" aria-hidden>{h.icon || '🎯'}</div>
+                        <div className="text-sm">{h.name}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button type="button" className="btn btn-secondary" onClick={() => onUnarchiveArchived?.(h.id)}>Unarchive</button>
+                        <button type="button" className="btn btn-secondary" onClick={() => onDeleteArchived?.(h.id)}>Delete</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="border border-border rounded-lg p-3">

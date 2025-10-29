@@ -19,8 +19,7 @@ export default function Header({ onMenuClick, onSettingsClick }: HeaderProps) {
             <span aria-hidden>⚙️</span>
           </button>
           <div className="text-base sm:text-lg font-semibold text-text select-none">
-            {/* Keep exact casing for test compatibility */}
-            Habit Harbor
+            Habit Log
           </div>
           <button
             type="button"

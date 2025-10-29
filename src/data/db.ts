@@ -10,15 +10,23 @@ export interface Habit {
   streak: number
   lastCompleted?: Date
   completedDates: Date[]
+  // New optional fields for cadence/rules and UX
+  frequency?: 'daily' | 'weekly' | 'weekdays'
+  targetType?: 'checkbox' | 'minutes' | 'count'
+  targetValue?: number
+  reminderNote?: string
+  motivation?: string
+  archived?: boolean
+  skippedDates?: Date[]
 }
 
 // Configure localForage
 localforage.config({
-  name: 'HabitHarbor',
+  name: 'HabitLog',
   storeName: 'habits'
 })
 
-const HABITS_KEY = 'user_habits'
+const HABITS_KEY = 'habitlog_user_habits'
 
 export class HabitDatabase {
   static async getHabits(): Promise<Habit[]> {
@@ -31,7 +39,8 @@ export class HabitDatabase {
         ...habit,
         createdAt: new Date(habit.createdAt),
         lastCompleted: habit.lastCompleted ? new Date(habit.lastCompleted) : undefined,
-        completedDates: habit.completedDates.map(date => new Date(date))
+        completedDates: habit.completedDates.map(date => new Date(date)),
+        skippedDates: (habit as any).skippedDates ? (habit as any).skippedDates.map((d: any) => new Date(d)) : []
       }))
     } catch (error) {
       console.error('Error loading habits:', error)
@@ -55,7 +64,9 @@ export class HabitDatabase {
       id: crypto.randomUUID(),
       createdAt: new Date(),
       streak: 0,
-      completedDates: []
+      completedDates: [],
+      archived: false,
+      skippedDates: []
     }
 
     habits.push(newHabit)
@@ -129,6 +140,28 @@ export class HabitDatabase {
     return habit
   }
 
+  static async skipHabitDate(habitId: string, date: Date): Promise<Habit | null> {
+    const habits = await this.getHabits()
+    const idx = habits.findIndex(h => h.id === habitId)
+    if (idx === -1) return null
+    const habit = habits[idx]
+    habit.skippedDates = habit.skippedDates ?? []
+    if (!habit.skippedDates.some(d => isSameDay(d, date))) {
+      habit.skippedDates.push(date)
+    }
+    await this.saveHabits(habits)
+    return habit
+  }
+
+  static async setArchived(habitId: string, archived: boolean): Promise<Habit | null> {
+    const habits = await this.getHabits()
+    const idx = habits.findIndex(h => h.id === habitId)
+    if (idx === -1) return null
+    habits[idx].archived = archived
+    await this.saveHabits(habits)
+    return habits[idx]
+  }
+
   static calculateStreak(completedDates: Date[]): number {
     if (completedDates.length === 0) return 0
 
@@ -176,5 +209,43 @@ export class HabitDatabase {
     habits[idx] = updated
     await this.saveHabits(habits)
     return updated
+  }
+
+  static calculateBestStreak(completedDates: Date[]): number {
+    if (completedDates.length === 0) return 0
+    const daySet = toDayKeySet(completedDates)
+    // Sort unique days
+    const days = Array.from(daySet.values())
+    days.sort()
+    let best = 0
+    let curr = 0
+    let prev: Date | null = null
+    for (const key of days) {
+      const [y, m, d] = key.split('-').map(Number)
+      const dt = new Date(y, m - 1, d)
+      if (!prev) {
+        curr = 1
+      } else {
+        const tmp = new Date(prev)
+        tmp.setDate(tmp.getDate() + 1)
+        if (toDayKey(tmp) === key) curr += 1
+        else curr = 1
+      }
+      if (curr > best) best = curr
+      prev = dt
+    }
+    return best
+  }
+
+  static completionRate30d(completedDates: Date[]): number {
+    const today = startOfDay(new Date())
+    const daySet = toDayKeySet(completedDates)
+    let hits = 0
+    const d = new Date(today)
+    for (let i = 0; i < 30; i++) {
+      if (daySet.has(toDayKey(d))) hits += 1
+      d.setDate(d.getDate() - 1)
+    }
+    return Math.round((hits / 30) * 100)
   }
 }

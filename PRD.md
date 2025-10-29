@@ -1,7 +1,7 @@
-# Habit Harbor – Product Requirements Document (PRD)
+# Keep Habit – Product Requirements Document (PRD)
 
 ## 1. Overview
-Habit Harbor is a minimalist **offline-first habit tracker** that works on desktop and mobile browsers as a PWA (Progressive Web App). 
+Keep Habit is a minimalist **offline-first habit tracker** that works on desktop and mobile browsers as a PWA (Progressive Web App). 
 It helps users build and maintain daily habits with **simplicity, offline reliability, and optional cloud sync**.
 
 ## 2. Goals

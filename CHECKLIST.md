@@ -1,4 +1,4 @@
-# Habit Harbor – Build Checklist
+# Keep Habit – Build Checklist
 
 ## 🔧 Setup
 - [x] Initialize repo with Vite + React + TS

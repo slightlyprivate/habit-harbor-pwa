@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { HabitDatabase, type Habit } from '../data/db'
+import { track } from '../utils/analytics'
 
 export function useHabits() {
   const [habits, setHabits] = useState<Habit[]>([])
@@ -25,7 +26,7 @@ export function useHabits() {
       const newHabit = await HabitDatabase.addHabit(habitData)
       setHabits(prev => [...prev, newHabit])
       // Track habit addition event
-      window.umami?.track('add_habit')
+      track('habit_create')
     } catch (err) {
       setError(err)
       throw err
@@ -51,9 +52,7 @@ export function useHabits() {
         setHabits(prev => prev.map(h => (h.id === habitId ? updated : h)))
         // Track habit completion event
         const habit = habits.find(h => h.id === habitId)
-        if (habit) {
-          window.umami?.track('log_habit', { habit_name: habit.name })
-        }
+        if (habit) track('habit_log', { habit_name: habit.name, streak: updated.streak })
       }
     } catch (err) {
       setError(err)
@@ -68,9 +67,7 @@ export function useHabits() {
         setHabits(prev => prev.map(h => (h.id === habitId ? updated : h)))
         // Track habit decrement event
         const habit = habits.find(h => h.id === habitId)
-        if (habit) {
-          window.umami?.track('decrement_habit', { habit_name: habit.name })
-        }
+        if (habit) track('habit_decrement', { habit_name: habit.name })
       }
     } catch (err) {
       setError(err)
@@ -84,9 +81,7 @@ export function useHabits() {
     if (success) {
       setHabits(prev => prev.filter(h => h.id !== habitId))
       // Track habit deletion event
-      if (habit) {
-        window.umami?.track('delete_habit', { habit_name: habit.name })
-      }
+      if (habit) track('habit_delete', { habit_name: habit.name })
     }
     return success
   }, [habits])

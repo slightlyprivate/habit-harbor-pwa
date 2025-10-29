@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habit-harbor-v3';
+const CACHE_NAME = 'habit-log-v1';
 const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {

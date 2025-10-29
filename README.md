@@ -1,6 +1,8 @@
-# Habit Harbor (Offline-First PWA)
+# Habit Log (Offline-First PWA)
 
 A minimalist habit tracker that works offline first, syncs when online, and installs to your home screen.
+
+Legacy tag: Habit Harbor (previous project name) for continuity.
 
 Live demo: https://habit-harbor.slightlybetter.dev
 
@@ -23,8 +25,8 @@ Live demo: https://habit-harbor.slightlybetter.dev
 
 ## 🚀 Quick Start
 ```bash
-git clone https://github.com/YOURUSER/habit-harbor-pwa
-cd habit-harbor-pwa
+git clone https://github.com/YOURUSER/habit-log-pwa
+cd habit-log-pwa
 cp .env.example .env
 npm i
 npm run dev
@@ -87,7 +89,7 @@ Deployed on Cloudflare Pages at: https://habit-harbor.slightlybetter.dev
 
 <p>
   <a href="https://habit-harbor.slightlybetter.dev">
-    <img alt="QR code linking to Habit Harbor" width="180" height="180" src="https://api.qrserver.com/v1/create-qr-code/?size=360x360&data=https%3A%2F%2Fhabit-harbor.slightlybetter.dev" />
+    <img alt="QR code linking to Habit Log" width="180" height="180" src="https://api.qrserver.com/v1/create-qr-code/?size=360x360&data=https%3A%2F%2Fhabit-harbor.slightlybetter.dev" />
   </a>
 </p>
 

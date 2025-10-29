@@ -1,6 +1,6 @@
 {
-  "name": "Habit Harbor",
-  "short_name": "HabitHarbor",
+  "name": "Habit Log",
+  "short_name": "HabitLog",
   "description": "Offline-first habit tracker with PWA support",
   "start_url": "/",
   "display": "standalone",
